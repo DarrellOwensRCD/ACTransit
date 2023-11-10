@@ -1,3 +1,5 @@
+# This program calculates the total ridership for each line in each direction for each day, then calculates the share
+# of riders for each stop.
 #Program assumes CSV file of ACT lines is sorted by Line, by day, by Direction, by sequential stop order in ascending
 import csv
 import copy
