@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Add a polygon to a map using a GeoJSON source</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+  <script
+    type="text/javascript"
+    src="/js/lib/dummy.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/result-light.css">
+
+      <script type="text/javascript" src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
+      <link rel="stylesheet" type="text/css" href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css">
+
+  <style id="compiled-css" type="text/css">
+      
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      h2,
+      h3 {
+        margin: 10px;
+        font-size: 1.2em;
+      }
+      h3 {
+        font-size: 1em;
+      }
+      p {
+        font-size: 0.85em;
+        margin: 10px;
+        text-align: left;
+      }
+      #features {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 25vw;
+        display: flex;
+        background: rgba(200, 200, 200, .5);
+      }
+      .button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 17px 26px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 0px; /* Sharp corners */
+      }
+      /* Positioning buttons */
+      .button-container {
+        position: relative;
+        top: 20px;
+        left: 13px;
+      }
+      #layerpicker {
+        position: absolute; 
+        top: 15%; /* Position below .button-container */
+        left: 80px;
+        width: 250px;
+      }
+      .map-overlay {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.8);
+        margin-right: 20px;
+        font-family: Arial, sans-serif;
+        overflow: auto;
+        border-radius: 3px;
+      }
+      #map {
+        position: fixed;
+        top: 0;
+        right:0;
+        height: 100vh;
+        width: 75vw;
+      }
+    /* EOS */
+  </style>
+
+  <script id="insert"></script>
+</head>
+<body>
+<div id="map"></div>
+<!-- Select Bus Routes Based on Selection Of Line Types -->
+<div class="map-overlay" id="features">
+<div class="button-container">
+  <!-- Toggle Between Local, Transbay and School Routes Rendering by Default -->
+  <button class="button" onclick="returnButton('Local')">Local</button>
+  <button class="button" onclick="returnButton('Transbay')">Transbay</button>
+  <button class="button" onclick="returnButton('School')">School</button>
+</div>
+ <select id='layerpicker' style = "width:200px;">
+<option value="1T"> 1</option>
+<option value="52"> 52</option>
+<option value="F"> F</option>
+</select>
+  <!-- Include the script that handles the communication -->
+  <script src="communication.js"></script>
+</div>
+<script src="fetchcountycsv.js"></script>
+<script src="fetchrecipecsv.js"></script>
+<script>
+    //ACCESS TOKEN IS DOMAIN RESTRICTED
+    mapboxgl.accessToken = 'pk.eyJ1IjoiaWRvdGhldGhpbmtpbmciLCJhIjoiY2xwcnFsYXhxMDllbjJqbHJ3c3Bubmc0dSJ9.p6CsmfrL9dq7GvgFyjMVtA';
+    const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+        style: 'mapbox://styles/mapbox/light-v11', // style URL
+        center: [-122.221,37.843], // starting position
+        zoom: 12 // starting zoom
+    });
+    //Load the map
+    map.on('load', () => {
+        map.addSource("Stops", {
+            "url": "mapbox://idothethinking.3wssicq0",
+            "type": "vector"
+        });
+        map.addSource("Lines", {
+            "url": "mapbox://idothethinking.cf8w54ka",
+            "type": "vector"
+        }); 
+        // Load all AC Transit Routes for Selection
+        map.addLayer({ 
+            id: "All_Lines_Rendered",
+            type: 'line',
+            'source' : "Lines",
+            'source-layer': "Winter23RouteShape-dok02n",
+            'layout': {},
+            'paint': {
+            'line-color': "#00f531",
+            'line-opacity':1,
+            'line-width': 2
+            }
+        },
+        'airport-label'
+        );
+        console.log("Map loaded with all sources");
+    });
+    var lastLayer = null;
+    const selectElement = document.querySelector('#layerpicker');
+    selectElement.addEventListener('change', (event) => {
+        selectedLayer = event.target.value
+        layerID = selectedLayer
+        if (lastLayer != layerID){
+          if (lastLayer){
+            map.removeLayer(lastLayer);
+          }
+          map.addLayer({
+              id: layerID,
+              type: 'line',
+              'source' : "Lines",
+              'source-layer': "Winter23RouteShape-dok02n",
+              'layout': {},
+              'paint': {
+              'line-color': [
+                "match",
+                ["get", "PUB_RTE"],
+                [selectedLayer],
+                "#fa0000",
+                "#000000"
+              ],
+              'line-opacity':[
+                "match",
+                ["get", "PUB_RTE"],
+                [selectedLayer],
+                1,
+                0
+              ],
+              }
+          },
+          'airport-label'
+          );
+          console.log("New Layer Added");
+        }
+        lastLayer = layerID
+    });
+</script>
+
+</body>
+</html>
