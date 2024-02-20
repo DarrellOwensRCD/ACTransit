@@ -62,7 +62,7 @@
         left: 13px;
       }
       #layerpicker {
-        position: absolute; 
+        position: absolute;
         top: 15%; /* Position below .button-container */
         left: 80px;
         width: 250px;
@@ -104,11 +104,8 @@
 <option value="52"> 52</option>
 <option value="F"> F</option>
 </select>
-  <!-- Include the script that handles the communication -->
-  <script src="communication.js"></script>
-</div>
-<script src="fetchcountycsv.js"></script>
-<script src="fetchrecipecsv.js"></script>
+  <!-- Include the script that fetches route info -->
+<script src="utils/fetchLines.js"></script>
 <script>
     //ACCESS TOKEN IS DOMAIN RESTRICTED
     mapboxgl.accessToken = 'pk.eyJ1IjoiaWRvdGhldGhpbmtpbmciLCJhIjoiY2xwcnFsYXhxMDllbjJqbHJ3c3Bubmc0dSJ9.p6CsmfrL9dq7GvgFyjMVtA';
@@ -129,23 +126,32 @@
             "url": "mapbox://idothethinking.cf8w54ka",
             "type": "vector"
         }); 
-        // Load all AC Transit Routes for Selection
-        map.addLayer({ 
-            id: "All_Lines_Rendered",
-            type: 'line',
-            'source' : "Lines",
-            'source-layer': "Winter23RouteShape-dok02n",
-            'layout': {},
-            'paint': {
-            'line-color': "#00f531",
-            'line-opacity':1,
-            'line-width': 2
-            }
-        },
-        'airport-label'
-        );
-        console.log("Map loaded with all sources");
+        //Add local by default
+      console.log("Map loaded with all sources");
     });
+    // Deterine what the base map will be
+  var current_base_layer = 'Local';
+  function returnButton(value) {
+    console.log("base_map updated to: ", value);
+    // Load all AC Transit Routes for Selection
+    map.removeLayer(current_base_layer);
+    map.addLayer({ 
+        id: value,
+        type: 'line',
+        'source' : "Lines",
+        'source-layer': "Winter23RouteShape-dok02n",
+        'layout': {},
+        'paint': {
+        'line-color': "#00f531",
+        'line-opacity':1,
+        'line-width': 2
+        }
+      },
+      'airport-label'
+      );
+      //Save current base layer
+      current_base_layer = value;
+    }
     var lastLayer = null;
     const selectElement = document.querySelector('#layerpicker');
     selectElement.addEventListener('change', (event) => {
