@@ -116,15 +116,24 @@
         center: [-122.221,37.843], // starting position
         zoom: 12 // starting zoom
     });
-    // Fetch gtfs data of each route, segemented by route type
-
+    // Define variables outside the scope of any function
+    let local_lines, school_lines, transbay_lines;
+    // Fetch gtfs data of each route, segmented by route type
     fetchLines().then(data => {
-      const local_routes = data[0];
-      const school_routes = data[1];
-      const transbay_routes = data[2];
-      console.log(local_routes);
+        const local_data = data[0];
+        const school_data = data[2];
+        const transbay_data = data[1];
+        local_lines = local_data.map(function(sublist) {
+            return sublist[0];
+        });
+        school_lines = school_data.map(function(sublist) {
+            return sublist[0];
+        });
+        transbay_lines = transbay_data.map(function(sublist) {
+            return sublist[0];
+        });
+        console.log(local_lines);
     });
-
     //Load the map
     map.on('load', () => {
         map.addSource("Stops", {
@@ -138,29 +147,50 @@
         //Add local by default
       console.log("Map loaded with all sources");
     });
-    // Deterine what the base map will be
-  var current_base_layer = 'Local';
+    
+  // Deterine what the base map buttons will be
+  let current_base_layer;
   function returnButton(value) {
-    console.log("base_map updated to: ", value);
-    // Load all AC Transit Routes for Selection
-    map.removeLayer(current_base_layer);
-    map.addLayer({ 
-        id: value,
-        type: 'line',
-        'source' : "Lines",
-        'source-layer': "Winter23RouteShape-dok02n",
-        'layout': {},
-        'paint': {
-        'line-color': "#00f531",
-        'line-opacity':1,
-        'line-width': 2
-        }
-      },
-      'airport-label'
-      );
-      //Save current base layer
-      current_base_layer = value;
+    if (value != current_base_layer){
+      console.log("base_map updated to: ", value);
+      // Load all AC Transit Routes for Selection
+      map.removeLayer(current_base_layer);
+      var list_of_routes;
+      if (value === 'Local'){
+        list_of_routes = local_lines;
+      }
+      else if (value === 'Transbay'){
+        list_of_routes = transbay_lines;
+
+      }
+      else{
+        list_of_routes = school_lines;
+      }
+      map.addLayer({ 
+          id: value,
+          type: 'line',
+          'source' : "Lines",
+          'source-layer': "Winter23RouteShape-dok02n",
+          'layout': {},
+          'paint': {
+          'line-color': "#00f531",
+          'line-opacity':[
+            "match",
+            ["get", "PUB_RTE"],
+            list_of_routes,
+            1,
+            0
+          ],
+          'line-width': 2
+          }
+        },
+        'airport-label'
+        );
+        //Save current base layer
+        current_base_layer = value;
+      }
     }
+    // Select Available AC Transit Lines
     var lastLayer = null;
     const selectElement = document.querySelector('#layerpicker');
     selectElement.addEventListener('change', (event) => {
