@@ -23,7 +23,7 @@ async function fetchLines() {
     const transbay = [];
     const school = [];
     const owl = [];
-    const early = []
+    const early = [];
     // Iterate through rows and create dictionary pairs
     rows.forEach(row => {
       const keys = row.split(',');
@@ -37,7 +37,7 @@ async function fetchLines() {
       else if  (keys[0].length === 3 && keys[0][0] === '8'){
         owl.push(keys)
       }
-      else if (keys[0] === '1T' || containsAlphaNumeric(keys[0]) || isNumeric(keys[0])) {
+      else if ((keys[0] === '1T' || containsAlphaNumeric(keys[0]) || isNumeric(keys[0])) && (keys[0] != 'NX3')) {
         //Local Line
         local.push(keys);
       }

@@ -116,6 +116,15 @@
         center: [-122.221,37.843], // starting position
         zoom: 12 // starting zoom
     });
+    // Fetch gtfs data of each route, segemented by route type
+
+    fetchLines().then(data => {
+      const local_routes = data[0];
+      const school_routes = data[1];
+      const transbay_routes = data[2];
+      console.log(local_routes);
+    });
+
     //Load the map
     map.on('load', () => {
         map.addSource("Stops", {
