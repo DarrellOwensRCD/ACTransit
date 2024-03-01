@@ -100,12 +100,13 @@
   <button class="button" onclick="returnButton('School')">School</button>
 </div>
  <select id='layerpicker' style = "width:200px;">
-<option value="1T"> 1</option>
-<option value="52"> 52</option>
-<option value="F"> F</option>
 </select>
-  <!-- Include the script that fetches route info -->
+  <!-- Include the script that fetches various route info -->
 <script src="utils/fetchLines.js"></script>
+<script src="utils/fetchRouteInfo.js"></script>
+  <!-- Include the script that controls dropdown menu options-->
+<script src="utils/updateDropdownMenu.js"></script>
+
 <script>
     //ACCESS TOKEN IS DOMAIN RESTRICTED
     mapboxgl.accessToken = 'pk.eyJ1IjoiaWRvdGhldGhpbmtpbmciLCJhIjoiY2xwcnFsYXhxMDllbjJqbHJ3c3Bubmc0dSJ9.p6CsmfrL9dq7GvgFyjMVtA';
@@ -134,6 +135,18 @@
         });
         console.log(local_lines);
     });
+    // Function to update layerpicker options
+    function updateLayerPicker(routes) {
+      const layerPicker = document.getElementById('layerpicker');
+      layerPicker.innerHTML = ''; // Clear existing options
+
+      routes.forEach(route => {
+        let option = document.createElement('option');
+        option.value = route.value;
+        option.textContent = route.label;
+        layerPicker.appendChild(option);
+      });
+    }
     //Load the map
     map.on('load', () => {
         map.addSource("Stops", {
@@ -156,16 +169,25 @@
       // Load all AC Transit Routes for Selection
       map.removeLayer(current_base_layer);
       var list_of_routes;
+      var dropdown_options; 
+      // Fetch route information and color line coding via GFTS
+      let route_and_information_dic = generateRoutes();
+      console.log(route_and_information_dic);
       if (value === 'Local'){
         list_of_routes = local_lines;
+        dropdown_options = generateOptions(local_lines, route_and_information_dic);
       }
       else if (value === 'Transbay'){
         list_of_routes = transbay_lines;
-
+        dropdown_options = generateOptions(transbay_lines, route_and_information_dic);
       }
       else{
         list_of_routes = school_lines;
+        dropdown_options = generateOptions(school_lines, route_and_information_dic);
       }
+      // updating dropdown_options represents list : [{Key: 1, Value: Int}{52 Ceder}{ }]
+      updateLayerPicker(dropdown_options);
+      // Updating base map lines
       map.addLayer({ 
           id: value,
           type: 'line',
@@ -190,7 +212,7 @@
         current_base_layer = value;
       }
     }
-    // Select Available AC Transit Lines
+    // Select Available AC Transit Lines in the Dropdown menu
     var lastLayer = null;
     const selectElement = document.querySelector('#layerpicker');
     selectElement.addEventListener('change', (event) => {
@@ -221,8 +243,7 @@
                 1,
                 0
               ],
-              }
-          },
+              }},
           'airport-label'
           );
           console.log("New Layer Added");
